@@ -1,0 +1,51 @@
+<h5>Online Live Streams </h5>
+
+
+<%= if @maybe_user == nil do %>
+  <%= form_for @changeset, @action, fn f -> %>
+
+    <div class="form-group">
+      <%= label f, :username, class: "control-label" %>
+      <%= text_input f, :username, class: "form-control" %>
+      <%= error_tag f, :username %>
+    </div>
+    <div class="form-group">
+      <%= label f, :password, class: "control-label" %>
+      <%= password_input f, :password, class: "form-control" %>
+      <%= error_tag f, :password %>
+    </div>
+    <div class="form-group">
+      <%= submit "Submit", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+<% else %>
+  <h1>Hello <%= @maybe_user.username%>!</h1>
+  <span><%= link "Logout", to: stream_path(@conn, :logout), method: :post%></span>
+  <%=  Ecto.DateTime.from_erl(:erlang.localtime)%>
+  <table class="minimalistBlack" >
+    <tr>
+      <th>Title</th>
+      <th>source</th>
+      <th>Output</th>
+      <th>Creation time</th>
+      <th>Status</th>
+
+    </tr>
+    <%= for stream <- @streams do %>
+    <tr>
+      <td>  <%= stream.title  %></td>
+      <td>  <%= stream.source  %></td>
+      <td>  <%= stream.output  %></td>
+      <td>  <%= stream.inserted_at %></td>
+      <td>  <%= stream.status  %></td>
+    </tr>
+    <% end %>
+
+  </table>
+  <div class="fixed-action-btn">
+  <%= link to: stream_path(@conn, :new), class: "btn-floating btn-large waves-effect waves-light red" do %>
+    <i class="material-icons"> add </i>
+    <% end %>
+  </a>
+  </div>
+<% end %>

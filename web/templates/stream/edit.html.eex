@@ -1,0 +1,14 @@
+<%= form_for @changeset, stream_path(@conn, :update, @topic ), fn  f   -> %>
+<div class="form-group">
+  <%= text_input f, :title, placeholder: "title", class: "form-control" %>
+  <%= text_input f, :source, placeholder: "source", class: "form-control" %>
+  <%= text_input f, :output, placeholder: "output", class: "form-control" %>
+
+  <%= error_tag f, :title %>
+  <%= error_tag f, :source %>
+  <%= error_tag f, :output %>
+</div>
+
+<%= submit "Save Topic ", class: "btn btn-primary" %>
+
+<% end %>

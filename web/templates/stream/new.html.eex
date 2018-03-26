@@ -1,0 +1,16 @@
+<%= form_for @changeset, stream_path(@conn, :create), fn f -> %>
+  <div class="form-group">
+    <%= text_input f, :title, placeholder: "title", class: "form-control" %>
+    <%= error_tag f, :title %>
+
+    <%= text_input f, :source, placeholder: "source", class: "form-control" %>
+    <%= error_tag f, :source %>
+
+    <%= text_input f, :output, placeholder: "output", class: "form-control" %>
+
+    <%= error_tag f, :output %>
+
+  </div>
+  <%= submit "Save and launch Stream ", class: "btn btn-primary" %>
+
+<% end %>
