@@ -33,10 +33,12 @@ defmodule Streaming.Router do
       # Definitely logged in scope
       scope "/", Streaming do
         pipe_through [:browser, :auth, :ensure_auth]
+        #post "/streams/edit/stop", StreamController, :stop
+        post "/streams/edit", StreamController, :player
         get "/secret", StreamController, :secret
         get "/streams/new", StreamController, :new
         post "/streams", StreamController, :create
-        get "/streams/:id/edit", StreamController, :edit
+        get "/streams/edit", StreamController, :edit
         put "/streams/:id", StreamController, :update
       end
 

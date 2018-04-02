@@ -19,8 +19,14 @@ defmodule  Streaming.Stream do
   end
   def changeset_ffmpeg(struct, params \\ %{}) do
     struct
-    |> cast(params, [:ffmpeg_pid])
-    |> validate_required([:ffmpeg_pid])
+    |> cast(params, [:ffmpeg_pid, :status])
+    |> validate_required([:ffmpeg_pid, :status])
   end
+  def changeset_play_pause(struct, params \\ %{}) do
+    struct
+    |> cast(params, [:ffmpeg_pid, :status])
+    |> validate_required([:ffmpeg_pid, :status])
+  end
+
 
 end

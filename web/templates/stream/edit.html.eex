@@ -1,14 +1,16 @@
-<%= form_for @changeset, stream_path(@conn, :update, @topic ), fn  f   -> %>
+<%= form_for @changeset, stream_path(@conn, :update, @stream ), fn  f   -> %>
 <div class="form-group">
-  <%= text_input f, :title, placeholder: "title", class: "form-control" %>
-  <%= text_input f, :source, placeholder: "source", class: "form-control" %>
-  <%= text_input f, :output, placeholder: "output", class: "form-control" %>
+  <%= text_input f, :title, placeholder: @stream.title, class: "form-control" %>
+  <%= text_input f, :source, placeholder: @stream.source, class: "form-control" %>
+  <%= text_input f, :output, placeholder: @stream.output, class: "form-control" %>
+  <%= text_input f, :ffmpeg_pid, placeholder: @stream.ffmpeg_pid, class: "form-control" %>
 
   <%= error_tag f, :title %>
   <%= error_tag f, :source %>
   <%= error_tag f, :output %>
 </div>
-
-<%= submit "Save Topic ", class: "btn btn-primary" %>
+<td>  <span><%= link "Play", to: stream_path(@conn, :player, stream: @stream,action: "play"), method: :post%></span></td>
+<td>  <span><%= link "Stop", to: stream_path(@conn, :player, stream: @stream, action: "stop"), method: :post%></span></td>
+<%= submit "Save  ", class: "btn btn-primary" %>
 
 <% end %>

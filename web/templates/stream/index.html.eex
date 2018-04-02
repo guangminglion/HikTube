@@ -29,6 +29,8 @@
       <th>Output</th>
       <th>Creation time</th>
       <th>Status</th>
+      <th>Stop</th>
+      <th>FFMPEG PID</th>
 
     </tr>
     <%= for stream <- @streams do %>
@@ -38,11 +40,18 @@
       <td>  <%= stream.output  %></td>
       <td>  <%= stream.inserted_at %></td>
       <td>  <%= stream.status  %></td>
+      <td>  <%= stream.ffmpeg_pid  %></td>
+
+      <td>  <span>  <%= link to: stream_path(@conn, :edit, id: stream.id), class: "btn-floating  waves-effect waves-light blue" do %>
+          <i class="material-icons"> settings </i>
+          <% end %></span></td>
+
     </tr>
     <% end %>
-
   </table>
-  <div class="fixed-action-btn">
+
+
+  <div class="action-btn">
   <%= link to: stream_path(@conn, :new), class: "btn-floating btn-large waves-effect waves-light red" do %>
     <i class="material-icons"> add </i>
     <% end %>
