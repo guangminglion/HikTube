@@ -4,6 +4,16 @@ defmodule Streaming.StreamController do
   alias Streaming.Auth.User
   alias Streaming.Auth.Guardian
   alias Streaming.Stream
+
+  defp get_thumbnails(rtsp_url,stream_name) do
+    Porcelain.shell("ffmpeg -i #{rtsp_url} -r 1 -an -frames 1  -updatefirst 1 -y web/static/assets/images/#{stream_name}.jpg")
+
+
+  end
+
+
+
+
   defp ffmpeg_pids(rtsp_url) do
     Porcelain.shell("ps -ef | grep ffmpeg | grep '#{rtsp_url}' | grep -v grep | awk '{print $2}'").out
     |> String.split
@@ -25,7 +35,7 @@ end
     "offline" ->
       %{source: source}=stream_db
       %{output: output}=stream_db
-      pid=spawn (fn ->     start_stream(source,output)      end)
+      pid=spawn (fn ->     start_stream(source,output,stream_db.title)      end)
       stream_pid=String.to_atom("pid_#{stream_db.id}")
       Process.register(pid, stream_pid)
       changeset= Stream.changeset_play_pause(stream_db, %{"ffmpeg_pid" => "#{stream_pid}" , "status" => "online"})
@@ -79,15 +89,16 @@ end
 
 
 
-  def start_stream(source, output) do
+  def start_stream(source, output,stream_name) do
 
+    get_thumbnails(source,stream_name)
     command= "nohup nice -n -10  ffmpeg   -f  lavfi -i anullsrc -rtsp_transport tcp -i  #{source} -crf 10  -deinterlace -vcodec libx264 -pix_fmt yuv420 -b:v 2500k   -tune zerolatency   -c:v  copy   -s 854x480  -framerate 30 -g 2   -threads 2   -f flv #{output}"
     commandlist= String.split("#{command}")
     port =Port.open({:spawn, "#{command}"}, [:binary] )
         {:os_pid, pid} = Port.info(port, :os_pid)
     Process.sleep(600000);
     System.cmd("kill",["-9"," #{pid}"])
-    start_stream(source,output)
+    start_stream(source,output,stream_name)
 
   end
 
@@ -95,9 +106,9 @@ end
     changeset = Auth.change_user(%User{})
     maybe_user = Guardian.Plug.current_resource(conn)
     message = if maybe_user != nil do
-      "Someone is logged in"
+      "you are logged in"
     else
-      "No one is logged in"
+      "you are logged out"
     end
     streams = Repo.all(Stream)
 
@@ -147,7 +158,7 @@ def create(conn, %{"stream" => stream}) do
     old_Stream= Repo.get(Stream, stream_meta.id)
     %{source: source}=old_Stream
     %{output: output}=old_Stream
-    pid=spawn (fn ->     start_stream(source,output)      end)
+    pid=spawn (fn ->     start_stream(source,output,old_Stream.title)      end)
     source_list=ffmpeg_pids(source)
     output_list=ffmpeg_pids(output)
     diff_list=source_list -- output_list

@@ -1,4 +1,6 @@
 <h5>Online Live Streams </h5>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
 
 
 <%= if @maybe_user == nil do %>
@@ -19,42 +21,76 @@
     </div>
   <% end %>
 <% else %>
+<div class="action-btn">
   <h1>Hello <%= @maybe_user.username%>!</h1>
-  <span><%= link "Logout", to: stream_path(@conn, :logout), method: :post%></span>
-  <%=  Ecto.DateTime.from_erl(:erlang.localtime)%>
-  <table class="minimalistBlack" >
+<%= link "Logout", to: stream_path(@conn, :logout), method: :post, style: "float:right"%>
+
+</div>
+
+
+
+  <div class="action-btn">
+  <%= link to: stream_path(@conn, :new), class: "btn-floating btn-large waves-effect waves-light green" do %>
+    <i class="material-icons"> add </i>
+    <% end %>
+  </div>
+    <table class="minimalistBlack" >
     <tr>
       <th>Title</th>
-      <th>source</th>
+      <th>Source</th>
       <th>Output</th>
       <th>Creation time</th>
-      <th>Status</th>
-      <th>Stop</th>
-      <th>FFMPEG PID</th>
+      <th >Status</th>
+      <th>Stream PID</th>
+      <th>Modify</th>
+      <th>Thumbnail</th>
 
     </tr>
     <%= for stream <- @streams do %>
     <tr>
       <td>  <%= stream.title  %></td>
-      <td>  <%= stream.source  %></td>
-      <td>  <%= stream.output  %></td>
+      <td>
+
+ <a class="btn" rel="popover" data-img="<%= static_path(@conn, "/images/#{stream.title}.jpg") %>"><%= stream.source %></a>
+    </td>
+      <td>
+ <%= stream.output  %></td>
       <td>  <%= stream.inserted_at %></td>
-      <td>  <%= stream.status  %></td>
+      <%= if stream.status=="online"  do %>
+      <td style="color:green;">  <%= stream.status  %>  </td>
+       <%else %>
+       <td style="color:red;">  <%= stream.status  %>  </td>
+       <% end %>
+
       <td>  <%= stream.ffmpeg_pid  %></td>
 
       <td>  <span>  <%= link to: stream_path(@conn, :edit, id: stream.id), class: "btn-floating  waves-effect waves-light blue" do %>
           <i class="material-icons"> settings </i>
-          <% end %></span></td>
+          <% end %></span>
+        </td>
+  <td>
 
+    <div class="imgcontainer">
+     <img src="<%= static_path(@conn, "/images/img.jpg") %>" \>
+   </div>
+
+    </td>
     </tr>
     <% end %>
   </table>
+  <div id="hidden-img" style="display:none;">
+    <img src="<%= static_path(@conn, "/images/img.jpg") %>" \>
 
-
-  <div class="action-btn">
-  <%= link to: stream_path(@conn, :new), class: "btn-floating btn-large waves-effect waves-light red" do %>
-    <i class="material-icons"> add </i>
-    <% end %>
-  </a>
   </div>
+
+
+
 <% end %>
+<script>
+$('a[rel=popover]').popover({
+  html: true,
+  trigger: 'hover',
+  placement: 'bottom',
+  content: function(){return '<img src="'+$(this).data('img') + '" />';}
+});
+</script>
