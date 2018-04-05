@@ -11,9 +11,6 @@ defmodule Streaming.StreamController do
 
   end
 
-
-
-
   defp ffmpeg_pids(rtsp_url) do
     Porcelain.shell("ps -ef | grep ffmpeg | grep '#{rtsp_url}' | grep -v grep | awk '{print $2}'").out
     |> String.split
@@ -110,33 +107,59 @@ end
     else
       "you are logged out"
     end
-    streams = Repo.all(Stream)
 
+  %{streams:  streams}=  Repo.get(User, maybe_user.id) |> Repo.preload(:streams)
+    IO.inspect (streams)
     conn
     |> put_flash(:info, message)
-    |> render("index.html", changeset: changeset, action: stream_path(conn, :login), maybe_user: maybe_user, streams: streams)
+    |> render("index.html", changeset: changeset, action: stream_path(conn, :login_global), maybe_user: maybe_user, streams: streams)
     #render conn, "index.html", Streams: Streams
   end
 
-  def login(conn, %{"user" => %{"username" => username, "password" => password}}) do
+
+  def login_global(conn, %{"user" =>user,  "action" => action}) do
+    case action do
+       "userlogin" -> login(conn, user)
+       "newuser" -> create_user(conn, user)
+    end
+  end
+
+
+def create_user(conn, %{"username"=>username, "password"=>password}) do
+ case Auth.create_user(%{"username"=>username, "password"=>password}) do
+   {:ok, _user} ->
+     Auth.authenticate_user(username, password)
+     |> login_reply(conn)
+
+ end
+end
+
+  def login(conn,%{"username"=>username, "password"=>password}) do
+
      Auth.authenticate_user(username, password)
      |> login_reply(conn)
    end
+
+
    defp login_reply({:error, error}, conn) do
      conn
      |> put_flash(:error, error)
      |> redirect(to: "/")
    end
+
+
    defp login_reply({:ok, user}, conn) do
      conn
      |> put_flash(:success, "Welcome back!")
      |> Guardian.Plug.sign_in(user)
      |> redirect(to: "/")
    end
+
+
    def logout(conn, _) do
      conn
      |> Guardian.Plug.sign_out()
-     |> redirect(to: stream_path(conn, :login))
+     |> redirect(to: stream_path(conn, :login_global))
    end
 
 
@@ -151,23 +174,28 @@ end
   end
 
 def create(conn, %{"stream" => stream}) do
+  user = Guardian.Plug.current_resource(conn)
+  message = if user != nil do
+    "you are logged in"
+  else
+    "you are logged out"
+  end
   changeset=Stream.changeset(%Stream{}, stream)
 
-  case Repo.insert(changeset) do
+  post = Ecto.build_assoc(user, :streams,changeset)
+
+  streams_with_user = Ecto.Changeset.put_assoc(changeset, :user, user)
+
+  case Repo.insert(streams_with_user) do
     {:ok, stream_meta} ->
     old_Stream= Repo.get(Stream, stream_meta.id)
     %{source: source}=old_Stream
     %{output: output}=old_Stream
     pid=spawn (fn ->     start_stream(source,output,old_Stream.title)      end)
-    source_list=ffmpeg_pids(source)
-    output_list=ffmpeg_pids(output)
-    diff_list=source_list -- output_list
-    common_list=source_list -- diff_list
-
     stream_pid=String.to_atom("pid_#{old_Stream.id}")
    Process.register(pid, stream_pid)
 
-    changeset_ffmpeg= Stream.changeset_ffmpeg(old_Stream, %{"ffmpeg_pid" => "#{stream_pid}", "status" => "online" })
+    changeset_ffmpeg= Stream.changeset_ffmpeg(old_Stream, %{ "ffmpeg_pid" => "#{stream_pid}", "status" => "online" })
     case Repo.update(changeset_ffmpeg) do
       {:ok, _Stream}  ->
           redirect(put_flash(conn, :info, "ffmpeg_pid Updated"), to: stream_path(conn, :index ))

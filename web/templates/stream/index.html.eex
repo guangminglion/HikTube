@@ -1,10 +1,13 @@
-<h5>Online Live Streams </h5>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
 
-
 <%= if @maybe_user == nil do %>
-  <%= form_for @changeset, @action, fn f -> %>
+
+
+    <div class="row">
+      <div class="column">
+        Already have an account ? please log in
+  <%= form_for @changeset, stream_path(@conn, :login_global, action: "userlogin"), fn f -> %>
 
     <div class="form-group">
       <%= label f, :username, class: "control-label" %>
@@ -17,10 +20,49 @@
       <%= error_tag f, :password %>
     </div>
     <div class="form-group">
-      <%= submit "Submit", class: "btn btn-primary" %>
+      <%= submit "login", class: "btn btn-primary" %>
+
     </div>
-  <% end %>
+    <% end %>
+
+  </div>
+
+
+  <div class="column">
+    Or register here
+    <%= form_for @changeset, stream_path(@conn, :login_global, action: "newuser"), fn f -> %>
+
+      <div class="form-group">
+        <%= label f, :username, class: "control-label" %>
+        <%= text_input f, :username, class: "form-control" %>
+        <%= error_tag f, :username %>
+      </div>
+      <div class="form-group">
+        <%= label f, :email, class: "control-label" %>
+        <%= text_input f, :email, class: "form-control" %>
+        <%= error_tag f, :email %>
+      </div>
+      <div class="form-group">
+        <%= label f, :password, class: "control-label" %>
+        <%= password_input f, :password, class: "form-control" %>
+        <%= error_tag f, :password %>
+      </div>
+      <div class="form-group">
+        <%= submit "Register", class: "btn btn-primary" %>
+
+      </div>
+      <% end %>
+  </div>
+
+</div>
+
+
+
 <% else %>
+
+<h5>Online Live Streams </h5>
+
+
 <div class="action-btn">
   <h1>Hello <%= @maybe_user.username%>!</h1>
 <%= link "Logout", to: stream_path(@conn, :logout), method: :post, style: "float:right"%>
@@ -36,25 +78,21 @@
   </div>
     <table class="minimalistBlack" >
     <tr>
-      <th>Title</th>
-      <th>Source</th>
-      <th>Output</th>
+      <th>Stream information</th>
+
       <th>Creation time</th>
       <th >Status</th>
       <th>Stream PID</th>
       <th>Modify</th>
-      <th>Thumbnail</th>
 
     </tr>
     <%= for stream <- @streams do %>
     <tr>
-      <td>  <%= stream.title  %></td>
-      <td>
 
- <a class="btn" rel="popover" data-img="<%= static_path(@conn, "/images/#{stream.title}.jpg") %>"><%= stream.source %></a>
-    </td>
-      <td>
- <%= stream.output  %></td>
+
+      <td>  Stream name : <%=stream.title  %>
+      <%= "Camera Url :" <>stream.source %>
+       <%= "Live channel :"<>stream.output  %></td>
       <td>  <%= stream.inserted_at %></td>
       <%= if stream.status=="online"  do %>
       <td style="color:green;">  <%= stream.status  %>  </td>
@@ -68,13 +106,7 @@
           <i class="material-icons"> settings </i>
           <% end %></span>
         </td>
-  <td>
 
-    <div class="imgcontainer">
-     <img src="<%= static_path(@conn, "/images/img.jpg") %>" \>
-   </div>
-
-    </td>
     </tr>
     <% end %>
   </table>

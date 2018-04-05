@@ -33,6 +33,10 @@ defmodule Streaming.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:secure_random, "~> 0.5.1"},
+      {:hasher, "~> 0.1.0"},
+
+      {:swoosh, "~> 0.8.1"},
       {:arc, "~> 0.8.0"},
       {:porcelain, "~> 2.0"},
       {:calendar, "~> 0.17.2"},

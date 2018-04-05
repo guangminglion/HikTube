@@ -27,7 +27,7 @@ defmodule Streaming.Router do
       pipe_through [:browser, :auth]
 
       get "/", StreamController, :index
-      post "/", StreamController, :login
+      post "/", StreamController, :login_global
       post "/logoutttt", StreamController, :logout
     end
       # Definitely logged in scope

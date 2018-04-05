@@ -27,4 +27,19 @@ config :streaming, Streaming.Auth.Guardian,
      # Replace this with the output of the mix command
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
+config :streaming, Streaming.Mailer,
+  adapter: Swoosh.Adapters.Mailgun,
+  api_key: "x.x.x"
+
+
+  config :guardian, Guardian,
+ allowed_algos: ["HS512"], # optional
+ verify_module: Guardian.JWT,  # optional
+ issuer: "Streaming",
+ ttl: { 30, :days },
+ allowed_drift: 2000,
+ verify_issuer: true, # optional
+ secret_key: System.get_env("GUARDIAN_SECRET") || "xx...xxxx",
+ serializer: Streaming.Web.GuardianSerializer
+
 import_config "#{Mix.env}.exs"

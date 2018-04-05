@@ -114,4 +114,19 @@ defmodule Streaming.Auth do
   def change_user(%User{} = user) do
     User.changeset(user, %{})
   end
+
+
+  def get_by_token(token) do
+  Repo.get_by(User, token: token)
+end
+
+
+
+def verify_email(%User{} = user) do
+  user
+  |> User.verify_changeset()
+  |> Repo.update()
+end
+
+
 end

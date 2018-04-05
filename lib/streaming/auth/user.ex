@@ -2,13 +2,19 @@ defmodule Streaming.Auth.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias Comeonin.Bcrypt
-
+ alias Streaming.Stream
 
   schema "users" do
     field :password, :string
     field :username, :string
 
+    field :email, :string
+    field :email_verified, :boolean
+    field :token, :string
     timestamps()
+
+    has_many :streams, Streaming.Stream
+
   end
 
   @doc false
@@ -16,6 +22,7 @@ defmodule Streaming.Auth.User do
     user
     |> cast(attrs, [:username, :password])
     |> validate_required([:username, :password])
+    |> validate_format(:email, ~r/@/)
     |> put_pass_hash()
   end
 

@@ -1,5 +1,6 @@
 defmodule  Streaming.Stream do
   use Streaming.Web, :model
+  alias Streaming.Auth.User
 
   schema "streams" do
     field :title, :string
@@ -9,6 +10,7 @@ defmodule  Streaming.Stream do
     field :created_at, :utc_datetime
     field :status, :string
     timestamps(updated_at: false, type: :utc_datetime)
+    belongs_to :user,  Streaming.Auth.User
 
   end
 
