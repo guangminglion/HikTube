@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
 
   <body style="margin:0;padding:0">
@@ -22,6 +22,19 @@
         <a href="/" class="brand-logo">
           HikTube
         </a>
+
+
+
+        <h5  style= "float:right">
+
+          <%=   if  Guardian.Plug.current_resource(@conn)!=nil do %>
+          <%=  Guardian.Plug.current_resource(@conn).email %>
+          <% end %>
+          <span class="label ">
+           <%= link "Logout", to: stream_path(@conn, :logout), method: :post%>
+         </span>
+       </h5>
+
       </div>
     </nav>
     <div class="container">

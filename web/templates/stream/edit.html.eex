@@ -4,11 +4,15 @@
 <%= form_for @changeset, stream_path(@conn, :update, @stream ), fn  f   -> %>
 
 
-    <%= link  to: stream_path(@conn, :player, stream: @stream, action: "play"), method: :post, class: "btn-floating  waves-effect waves-light blue" do %>
-      <i class="material-icons">  play</i>
-      <% end %>
-   <span>  <%= link  to: stream_path(@conn, :player, stream: @stream, action: "stop"), method: :post, class: "btn-floating  waves-effect waves-light blue" do %>
-      <i class="material-icons"> stop </i>
+     <span><%= link  to:  stream_path(@conn, :player, stream: @stream, action: "play"),style: "float:right", method: :post, class: "btn btn-primary   waves-light blue" do %>
+      <i> Start </i>
+      <% end %> <span>
+        <br />
+        <br />
+        <br />
+
+   <span>  <%= link  to: stream_path(@conn, :player, stream: @stream, action: "stop"),style: "float:right", method: :post, class: "btn btn-primary  waves-effect waves-light blue" do %>
+      <i > stop </i>
       <% end %></span>
 
 
@@ -25,3 +29,6 @@
 <%= submit "Save  ", class: "btn btn-primary" %>
 
 <% end %>
+<span>  <%= link  to: stream_path(@conn, :player, stream: @stream, action: "delete"),style: "float:right", method: :post, class: "btn btn-primary  waves-effect waves-light blue" do %>
+   <i > Delete </i>
+   <% end %></span>

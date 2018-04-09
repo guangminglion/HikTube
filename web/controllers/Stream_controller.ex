@@ -5,6 +5,22 @@ defmodule Streaming.StreamController do
   alias Streaming.Auth.Guardian
   alias Streaming.Stream
 
+
+def delete_stream(conn, stream) do
+  stream_db=Repo.get(Stream,stream)
+  case stream_db.status do
+    "offline" ->
+      Repo.delete(stream_db)
+       redirect(conn,to: "/")
+      "online" ->
+        redirect(put_flash(conn, :error , "Please stop the stream before removing it"), to: stream_path(conn, :edit, %{"id" => stream_db.id}))
+
+  end
+
+
+end
+
+
   defp get_thumbnails(rtsp_url,stream_name) do
     Porcelain.shell("ffmpeg -i #{rtsp_url} -r 1 -an -frames 1  -updatefirst 1 -y web/static/assets/images/#{stream_name}.jpg")
 
@@ -22,6 +38,7 @@ def player(conn, %{ "stream" => stream, "action" => action}) do
   case action do
      "play" -> play(conn, stream)
      "stop" -> stop(conn, stream)
+     "delete" -> delete_stream(conn,stream)
   end
 
 end
@@ -63,7 +80,10 @@ end
      :erlang.whereis(stream_pid)
       %{source: source}=stream_db
       %{output: output}=stream_db
+      IO.inspect( :erlang.whereis(stream_pid))
+      if(:erlang.whereis(stream_pid)!=:undefined) do
       Process.exit(:erlang.whereis(stream_pid), :kill)
+    end
     source_list=  ffmpeg_pids(source)
     output_list=  ffmpeg_pids(output)
       diff_list=source_list -- output_list
@@ -88,12 +108,12 @@ end
 
   def start_stream(source, output,stream_name) do
 
-    get_thumbnails(source,stream_name)
+    #get_thumbnails(source,stream_name)
     command= "nohup nice -n -10  ffmpeg   -f  lavfi -i anullsrc -rtsp_transport tcp -i  #{source} -crf 10  -deinterlace -vcodec libx264 -pix_fmt yuv420 -b:v 2500k   -tune zerolatency   -c:v  copy   -s 854x480  -framerate 30 -g 2   -threads 2   -f flv #{output}"
     commandlist= String.split("#{command}")
     port =Port.open({:spawn, "#{command}"}, [:binary] )
         {:os_pid, pid} = Port.info(port, :os_pid)
-    Process.sleep(600000);
+    Process.sleep(200000);
     System.cmd("kill",["-9"," #{pid}"])
     start_stream(source,output,stream_name)
 
@@ -102,17 +122,21 @@ end
   def index(conn, _params) do
     changeset = Auth.change_user(%User{})
     maybe_user = Guardian.Plug.current_resource(conn)
-    message = if maybe_user != nil do
-      "you are logged in"
-    else
-      "you are logged out"
+
+
+     if maybe_user != nil do
+       %{streams:  streams}=  Repo.get(User, maybe_user.id) |> Repo.preload(:streams)
+         IO.inspect (streams)
+        conn
+        |> render("index.html", changeset: changeset, action: stream_path(conn, :login_global), maybe_user: maybe_user, streams: streams)
+       else
+
+         conn
+         |> render("index.html", changeset: changeset, action: stream_path(conn, :login_global), maybe_user: maybe_user)
+
     end
 
-  %{streams:  streams}=  Repo.get(User, maybe_user.id) |> Repo.preload(:streams)
-    IO.inspect (streams)
-    conn
-    |> put_flash(:info, message)
-    |> render("index.html", changeset: changeset, action: stream_path(conn, :login_global), maybe_user: maybe_user, streams: streams)
+
     #render conn, "index.html", Streams: Streams
   end
 
@@ -125,18 +149,37 @@ end
   end
 
 
-def create_user(conn, %{"username"=>username, "password"=>password}) do
- case Auth.create_user(%{"username"=>username, "password"=>password}) do
+def create_user(conn, %{"email"=>email, "password"=>password}) do
+
+  user_changeset=User.changeset(%User{}, %{"email"=>email, "password"=>password})
+
+ case Repo.insert(user_changeset)   do
+  {:ok, _changeset} ->
+    conn
+    |> put_flash(:info, "Your account was created")
+    |> login( %{"email"=>email, "password"=>password})
+
+  {:error, changeset} ->
+    IO.puts "eeeee"
+    IO.inspect (changeset.errors[:email])
+    {email_error, _list}=changeset.errors[:email]
+    conn
+    |> put_flash(:info, "Unable to create account. Email #{email_error}")
+    |> redirect(to: "/")
+end
+
+
+
+ case Auth.create_user(%{"email"=>email, "password"=>password}) do
    {:ok, _user} ->
-     Auth.authenticate_user(username, password)
-     |> login_reply(conn)
+login(conn, %{"email"=>email, "password"=>password})
 
  end
 end
 
-  def login(conn,%{"username"=>username, "password"=>password}) do
+  def login(conn,%{"email"=>email, "password"=>password}) do
 
-     Auth.authenticate_user(username, password)
+     Auth.authenticate_user(email, password)
      |> login_reply(conn)
    end
 
@@ -159,7 +202,7 @@ end
    def logout(conn, _) do
      conn
      |> Guardian.Plug.sign_out()
-     |> redirect(to: stream_path(conn, :login_global))
+     |> redirect(to: "/")
    end
 
 
@@ -198,9 +241,13 @@ def create(conn, %{"stream" => stream}) do
     changeset_ffmpeg= Stream.changeset_ffmpeg(old_Stream, %{ "ffmpeg_pid" => "#{stream_pid}", "status" => "online" })
     case Repo.update(changeset_ffmpeg) do
       {:ok, _Stream}  ->
-          redirect(put_flash(conn, :info, "ffmpeg_pid Updated"), to: stream_path(conn, :index ))
+        #  redirect(put_flash(conn, :info, "ffmpeg_pid Updated"), to: stream_path(conn, :index ))
+          redirect(conn, to: stream_path(conn, :index ))
+
      {:error, changeset} ->
-      redirect(put_flash(conn, :error , "ffmpeg_pid update fail"), to: stream_path(conn, :index))
+    #  redirect(put_flash(conn, :error , "ffmpeg_pid update fail"), to: stream_path(conn, :index))
+    redirect(conn, to: stream_path(conn, :index ))
+
     end
       redirect(put_flash(conn,:info,"Stream Created"), to: stream_path(conn,:index) )
 

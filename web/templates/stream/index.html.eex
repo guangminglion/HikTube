@@ -10,9 +10,9 @@
   <%= form_for @changeset, stream_path(@conn, :login_global, action: "userlogin"), fn f -> %>
 
     <div class="form-group">
-      <%= label f, :username, class: "control-label" %>
-      <%= text_input f, :username, class: "form-control" %>
-      <%= error_tag f, :username %>
+      <%= label f, :email, class: "control-label" %>
+      <%= text_input f, :email, class: "form-control" %>
+      <%= error_tag f, :email %>
     </div>
     <div class="form-group">
       <%= label f, :password, class: "control-label" %>
@@ -33,15 +33,11 @@
     <%= form_for @changeset, stream_path(@conn, :login_global, action: "newuser"), fn f -> %>
 
       <div class="form-group">
-        <%= label f, :username, class: "control-label" %>
-        <%= text_input f, :username, class: "form-control" %>
-        <%= error_tag f, :username %>
-      </div>
-      <div class="form-group">
         <%= label f, :email, class: "control-label" %>
         <%= text_input f, :email, class: "form-control" %>
         <%= error_tag f, :email %>
       </div>
+
       <div class="form-group">
         <%= label f, :password, class: "control-label" %>
         <%= password_input f, :password, class: "form-control" %>
@@ -60,19 +56,16 @@
 
 <% else %>
 
-<h5>Online Live Streams </h5>
 
 
 <div class="action-btn">
-  <h1>Hello <%= @maybe_user.username%>!</h1>
-<%= link "Logout", to: stream_path(@conn, :logout), method: :post, style: "float:right"%>
 
 </div>
 
 
 
-  <div class="action-btn">
-  <%= link to: stream_path(@conn, :new), class: "btn-floating btn-large waves-effect waves-light green" do %>
+  <div class="fixed-action-btn">
+  <%= link to: stream_path(@conn, :new), class: "btn btn-floating btn-large waves-effect waves-light green" do %>
     <i class="material-icons"> add </i>
     <% end %>
   </div>
@@ -82,7 +75,6 @@
 
       <th>Creation time</th>
       <th >Status</th>
-      <th>Stream PID</th>
       <th>Modify</th>
 
     </tr>
@@ -90,9 +82,12 @@
     <tr>
 
 
-      <td>  Stream name : <%=stream.title  %>
-      <%= "Camera Url :" <>stream.source %>
-       <%= "Live channel :"<>stream.output  %></td>
+      <td>  <a style="color:blue font-weight:bold ">Stream name : </a>
+          <%=stream.title  %>        <br />
+
+      <a style="color:blue font-weight:bold ">Rtsp URL :</a><br /><%=stream.source %>        <br />
+
+       <a style="color:blue font-weight:bold ">Youtube URL: </a><br /><%= stream.output  %></td>
       <td>  <%= stream.inserted_at %></td>
       <%= if stream.status=="online"  do %>
       <td style="color:green;">  <%= stream.status  %>  </td>
@@ -100,7 +95,6 @@
        <td style="color:red;">  <%= stream.status  %>  </td>
        <% end %>
 
-      <td>  <%= stream.ffmpeg_pid  %></td>
 
       <td>  <span>  <%= link to: stream_path(@conn, :edit, id: stream.id), class: "btn-floating  waves-effect waves-light blue" do %>
           <i class="material-icons"> settings </i>

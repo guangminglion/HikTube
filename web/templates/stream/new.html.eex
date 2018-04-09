@@ -4,14 +4,17 @@
 
 <%= form_for @changeset, stream_path(@conn, :create), fn f -> %>
   <div class="form-group">
-    <%= text_input f, :title, placeholder: "title", class: "form-control" %>
+
+    <%= label f, :title, class: "control-label" %>
+    <%= text_input f, :title, placeholder: "Stream name", class: "form-control" %>
     <%= error_tag f, :title %>
 
-    <%= text_input f, :source, placeholder: "source", class: "form-control" %>
+    <%= label f, :source, class: "control-label" %>
+    <%= text_input f, :source, placeholder: "rtsp://username:password@xxx.xxx.xxx.xxx:port/ISAPI/Streaming/channels/201/av_stream ", class: "form-control" %>
     <%= error_tag f, :source %>
 
-    <%= text_input f, :output, placeholder: "output", class: "form-control" %>
-
+    <%= label f, :output, class: "control-label" %>
+    <%= text_input f, :output, placeholder: "rtmp://x.rtmp.youtube.com/live2/Key", class: "form-control" %>
     <%= error_tag f, :output %>
 
   </div>

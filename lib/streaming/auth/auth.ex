@@ -9,8 +9,8 @@ defmodule Streaming.Auth do
 
   alias Streaming.Auth.User
 
-  def authenticate_user(username, plain_text_password) do
-    query = from u in User, where: u.username == ^username
+  def authenticate_user(email, plain_text_password) do
+    query = from u in User, where: u.email == ^email
     Repo.one(query)
     |> check_password(plain_text_password)
   end
